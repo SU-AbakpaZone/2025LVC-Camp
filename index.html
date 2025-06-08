@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>2025 SU Vacation Camp</title>
+  <style>
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    /* Slideshow background container */
+    .slideshow {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .slideshow img {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+
+    .slideshow img.active {
+      opacity: 1;
+    }
+
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.6);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+
+    .logo img {
+      
+      height: 80px;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.3em;
+      margin-bottom: 30px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .buttons a {
+      text-decoration: none;
+      background-color: #ff6600;
+      padding: 15px 25px;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      font-size: 1em;
+      transition: background 0.3s ease;
+    }
+
+    .buttons a:hover {
+      background-color: #e65c00;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Slideshow Background -->
+  <div class="slideshow">
+    <img src="su camp.jpg" class="active" alt="Slide 1">
+    <img src="WORD.jpg" alt="Slide 2">
+    <img src="PRAISE.jpg" alt="Slide 3">
+    <img src="BIBLE STUDY.jpg" alt="Slide 4">
+    <img src="camp 2.jpg" alt="Slide 5">
+    
+    <!-- Add more slides as needed -->
+  </div>
+
+  <!-- Logo -->
+  <div class="logo">
+    <img src="LOGO_3.png" alt="SU Logo">
+  </div>
+
+  <!-- Overlay Content -->
+  <div class="overlay">
+    <br><br>
+<br><br><br>
+<br><br>
+
+    <h1>Welcome to Scripture Union Nigeria, Abakpa zone <br>2025 Children, Youth & Students Long Vacation Camp Registration Portal</h1>
+    <br><p>Theme: <strong>Build on Build Up (Jude 2:20)</strong><br><br>Date:<strong>Anglican Cathedral Church of St Cyprian Abakpa Nike, Enugu</strong><br>Date: <strong>Wednesday 6th - Saturday 9th August 2025</strong></p>
+    <p></p>
+    <p></p>
+    <div class="buttons">
+      <a href="childrenregform.html" target="_blank">Registeration portal for Children</a>
+      <a href="youthregform.html" target="_blank">Registeration portal for Youth (Secondary/SUCF)</a>
+      <a href="pilgrimregform.html" target="_blank">Registeration portal for Pilgrims</a>
+
+
+    <p>Cliick to register, <br>copy out your resgistration code and keep it safe</p>
+    <p>Registration is free, access to the camp is only for those who registered
+    <br>Camp material will be available at a total sum of 700 naira.</p>
+    </div>
+  </div>
+
+  <!-- JavaScript for slideshow -->
+  <script>
+    const slides = document.querySelectorAll('.slideshow img');
+    let current = 0;
+
+    setInterval(() => {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    }, 5000); // Change every 5 seconds
+  </script>
+  
+</body>
+</html>
