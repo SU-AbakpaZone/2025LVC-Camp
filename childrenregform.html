@@ -9,7 +9,6 @@
       font-family: Arial, sans-serif;
       padding: 20px;
       background-color: #083f16;
-      
     }
     h1, h2 {
       text-align: center;
@@ -28,7 +27,6 @@
       background-color: #c8f1d1;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      
     }
     input, select, button, textarea {
       width: 95%;
@@ -39,7 +37,7 @@
     }
     button {
       background-color: #007bff;
-      color: rgb(255, 255, 255);
+      color: white;
       cursor: pointer;
       width: 20%;
     }
@@ -67,13 +65,14 @@
       display: none;
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <form id="campForm">
+  <form id="campForm">
     <div class="logo">
-    <img src="LOGO_3.png" alt="Logo">
-  </div>
-  <h2><b>Scripture Union Nigeria, Abakpa Zone.</b> <br>2025 Children, Youth & Students Long Vacation Camp.<br>Children Registration Portal</h2>
+      <img src="LOGO_3.png" alt="Logo">
+    </div>
+    <h2><b>Scripture Union Nigeria, Abakpa Zone.</b> <br>2025 Children, Youth & Students Long Vacation Camp.<br>Children Registration Portal</h2>
     <input type="text" name="name" placeholder="Full Name" required />
     <input type="text" name="age" placeholder="Age" required />
     <input type="text" name="gender" placeholder="Gender" required />
@@ -83,11 +82,11 @@
     <input type="text" name="class" placeholder="Class" required />
     <input type="tel" name="phone" placeholder="Phone Number" required />
     <input type="tel" name="parent_contact" placeholder="Parent/Guardian Contact" required />
-    <input type="text" name="are you su member" placeholder="Are you SU member" required />
-    <input type="text" name="is it your first time in su camp" placeholder="Is it your first time in SU camp?" required />
-    
+    <input type="text" name="are_you_su_member" placeholder="Are you SU member" required />
+    <input type="text" name="is_it_your_first_time_in_su_camp" placeholder="Is it your first time in SU camp?" required />
     <button type="submit">Submit</button>
   </form>
+
   <div id="confirmation" style="display:none;"></div>
 
   <div id="adminLogin">
@@ -114,8 +113,8 @@
           <th>Class</th>
           <th>Phone</th>
           <th>Parent Contact</th>
-          <th>Are you SU member?</th>
-          <th>Is it your first time in SU Camp?</th>
+          <th>SU Member?</th>
+          <th>First Time?</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
@@ -163,14 +162,42 @@
       `;
     }
 
-    function downloadResponse(data) {
-      const content = `SU CAMP\n\nName: ${data.name}\nCode: ${data.code}\nAge: ${data.age}\nGender: ${data.gender}\nClass: ${data.class_fellowship}\nChurch: ${data.church}\nPhone: ${data.phone}\nParent Contact: ${data.parent_contact}\nAre you SU Member: ${data.are_you_su_member}\nIs it your first time in SU Camp: ${data.Is_it_your_first_in_SU_Camp}\n\nThank you for your application. Please come with 700 naira.`;
-      const blob = new Blob([content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${data.code}_confirmation.txt`;
-      a.click();
+    async function downloadResponse(data) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const logo = new Image();
+      logo.src = 'LOGO_3.png';
+
+      logo.onload = () => {
+        doc.addImage(logo, 'PNG', 80, 10, 50, 30);
+        doc.setFontSize(12);
+        let y = 50;
+        const lineHeight = 10;
+
+        const lines = [
+          `Name: ${data.name}`,
+          `Code: ${data.code}`,
+          `Age: ${data.age}`,
+          `Gender: ${data.gender}`,
+          `Fellowship: ${data.class_fellowship}`,
+          `Church: ${data.church}`,
+          `School: ${data.school}`,
+          `Class: ${data.class}`,
+          `Phone: ${data.phone}`,
+          `Parent Contact: ${data.parent_contact}`,
+          `SU Member: ${data.are_you_su_member}`,
+          `First Time in SU Camp: ${data.is_it_your_first_time_in_su_camp}`,
+          `\nCome with ₦700 for materials.`
+        ];
+
+        lines.forEach(line => {
+          doc.text(line, 20, y);
+          y += lineHeight;
+        });
+
+        doc.save(`${data.code}_confirmation.pdf`);
+      };
     }
 
     function loadApplications() {
@@ -186,7 +213,7 @@
           <td>${app.code}</td>
           <td>${app.name}</td>
           <td>${app.age}</td>
-          <td>${app.Gender}</td>
+          <td>${app.gender}</td>
           <td>${app.class_fellowship}</td>
           <td>${app.church}</td>
           <td>${app.school}</td>
@@ -202,9 +229,9 @@
 
     function downloadCSV() {
       const data = JSON.parse(localStorage.getItem('applications')) || [];
-      let csv = 'Code,Name,Age,Class Fellowship,Church,School,class,Phone,Parent Contact,SU Member,First Time\n';
+      let csv = 'Code,Name,Age,Gender,Class Fellowship,Church,School,Class,Phone,Parent Contact,SU Member,First Time\n';
       data.forEach(app => {
-        csv += `${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class}${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp}\n`;
+        csv += `${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp}\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
