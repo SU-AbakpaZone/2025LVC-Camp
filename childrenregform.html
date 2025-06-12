@@ -37,7 +37,7 @@
     }
     button {
       background-color: #007bff;
-      color: white;
+      color: rgb(255, 255, 255);
       cursor: pointer;
       width: 20%;
     }
@@ -65,7 +65,6 @@
       display: none;
     }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   <form id="campForm">
@@ -86,7 +85,6 @@
     <input type="text" name="is_it_your_first_time_in_su_camp" placeholder="Is it your first time in SU camp?" required />
     <button type="submit">Submit</button>
   </form>
-
   <div id="confirmation" style="display:none;"></div>
 
   <div id="adminLogin">
@@ -113,8 +111,8 @@
           <th>Class</th>
           <th>Phone</th>
           <th>Parent Contact</th>
-          <th>SU Member?</th>
-          <th>First Time?</th>
+          <th>Are you SU member?</th>
+          <th>Is it your first time in SU Camp?</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
@@ -137,6 +135,10 @@
 
     form.addEventListener('submit', e => {
       e.preventDefault();
+      if (!form.checkValidity()) {
+        alert("Please complete all required fields.");
+        return;
+      }
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
       data.code = `SU${getSerialNumber().toString().padStart(4, '0')}`;
@@ -146,10 +148,21 @@
     });
 
     function saveApplication(data) {
-      let apps = JSON.parse(localStorage.getItem('applications')) || [];
-      apps.push(data);
-      localStorage.setItem('applications', JSON.stringify(apps));
-      loadApplications();
+      const url = "YOUR_WEB_APP_URL_HERE"; // Replace with your Google Apps Script Web App URL
+
+      fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.');
+        }
+        console.log("Application saved to Google Sheets.");
+      }).catch(error => {
+        console.error("Failed to save application:", error);
+        alert("There was a problem saving your application. Try again.");
+      });
     }
 
     function showConfirmation(data) {
@@ -158,46 +171,7 @@
         <h2>Dear ${data.name} (${data.code}),</h2>
         <p>Thank you for your application to be a part of this year Children, Youth and Student Long Vacation Camp. We believe it will bless you.</p>
         <p>Come with 700 naira to purchase camp materials such as Bible study outline and Magazine.</p>
-        <button onclick='downloadResponse(${JSON.stringify(data)})'>Download Confirmation PDF</button>
       `;
-    }
-
-    async function downloadResponse(data) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      const logo = new Image();
-      logo.src = 'LOGO_3.png';
-
-      logo.onload = () => {
-        doc.addImage(logo, 'PNG', 80, 10, 50, 30);
-        doc.setFontSize(12);
-        let y = 50;
-        const lineHeight = 10;
-
-        const lines = [
-          `Name: ${data.name}`,
-          `Code: ${data.code}`,
-          `Age: ${data.age}`,
-          `Gender: ${data.gender}`,
-          `Fellowship: ${data.class_fellowship}`,
-          `Church: ${data.church}`,
-          `School: ${data.school}`,
-          `Class: ${data.class}`,
-          `Phone: ${data.phone}`,
-          `Parent Contact: ${data.parent_contact}`,
-          `SU Member: ${data.are_you_su_member}`,
-          `First Time in SU Camp: ${data.is_it_your_first_time_in_su_camp}`,
-          `\nCome with ₦700 for materials.`
-        ];
-
-        lines.forEach(line => {
-          doc.text(line, 20, y);
-          y += lineHeight;
-        });
-
-        doc.save(`${data.code}_confirmation.pdf`);
-      };
     }
 
     function loadApplications() {
@@ -234,7 +208,7 @@
         csv += `${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp}\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
+      const url = https://script.google.com/macros/s/AKfycby2zZQTfKEd4iUT6rFtEqihKism6dXrL3ST-RO6kQL42O7T1vZGg_naJif52W8eI2g/exec(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = 'applications.csv';
