@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SU Camp Application & Admin Panel</title>
+
+  <!-- PDF Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -37,9 +42,9 @@
     }
     button {
       background-color: #007bff;
-      color: rgb(255, 255, 255);
+      color: white;
       cursor: pointer;
-      width: 20%;
+      width: 40%;
     }
     #resetBtn {
       background-color: #dc3545;
@@ -71,7 +76,8 @@
     <div class="logo">
       <img src="LOGO_3.png" alt="Logo">
     </div>
-    <h2><b>Scripture Union Nigeria, Abakpa Zone.</b> <br>2025 Children, Youth & Students Long Vacation Camp.<br>Children Registration Portal</h2>
+    <h2><b>Scripture Union Nigeria, Abakpa Zone.</b><br>2025 Children, Youth & Students Long Vacation Camp.<br>Children Registration Portal</h2>
+
     <input type="text" name="name" placeholder="Full Name" required />
     <input type="text" name="age" placeholder="Age" required />
     <input type="text" name="gender" placeholder="Gender" required />
@@ -85,6 +91,7 @@
     <input type="text" name="is_it_your_first_time_in_su_camp" placeholder="Is it your first time in SU camp?" required />
     <button type="submit">Submit</button>
   </form>
+
   <div id="confirmation" style="display:none;"></div>
 
   <div id="adminLogin">
@@ -151,7 +158,7 @@
     });
 
     function saveApplication(data) {
-      const url = "https://script.google.com/macros/s/AKfycbwYygBvOiicVVLqEXYQejnjMUYOv4k74bPx9Fi_Ye1rK3SBBY9Sm73AyTuHlwkVZRK2mg/exec"; // Replace with your deployed script URL
+      const url = "https://script.google.com/macros/s/AKfycbwYygBvOiicVVLqEXYQejnjMUYOv4k74bPx9Fi_Ye1rK3SBBY9Sm73AyTuHlwkVZRK2mg/exec";
       fetch(url, {
         method: 'POST',
         body: JSON.stringify(data),
@@ -164,11 +171,45 @@
     function showConfirmation(data) {
       confirmation.style.display = 'block';
       confirmation.innerHTML = `
-        <h2>Dear ${data.name} (${data.code}),</h2>
-        <p>Thank you for your application to be a part of this year Children, Youth and Student Long Vacation Camp. We believe it will bless you.</p>
-        <p>Come with 700 naira to purchase camp materials such as Bible study outline and Magazine.</p>
-        <button onclick="downloadPDF(${JSON.stringify(data)})">Download PDF</button>
+        <div id="pdfContent" style="padding: 20px; background-color: #ffffff; border: 2px solid #007bff; border-radius: 10px;">
+          <div style="text-align: center;">
+            <img src="LOGO_3.png" alt="Logo" style="width: 100px; margin-bottom: 20px;" />
+            <h2 style="color: #083f16;">Scripture Union Nigeria, Abakpa Zone</h2>
+            <p><strong>2025 Children, Youth & Students Long Vacation Camp</strong></p>
+            <h3 style="color: #007bff;">Application Confirmation</h3>
+          </div>
+          <p><strong>Name:</strong> ${data.name}</p>
+          <p><strong>Code:</strong> ${data.code}</p>
+          <p><strong>Age:</strong> ${data.age}</p>
+          <p><strong>Gender:</strong> ${data.gender}</p>
+          <p><strong>Fellowship Group:</strong> ${data.class_fellowship}</p>
+          <p><strong>Church:</strong> ${data.church}</p>
+          <p><strong>School:</strong> ${data.school}</p>
+          <p><strong>Class:</strong> ${data.class}</p>
+          <p><strong>Phone:</strong> ${data.phone}</p>
+          <p><strong>Parent/Guardian Contact:</strong> ${data.parent_contact}</p>
+          <p><strong>SU Member:</strong> ${data.are_you_su_member}</p>
+          <p><strong>First Time in SU Camp:</strong> ${data.is_it_your_first_time_in_su_camp}</p>
+          <p style="margin-top: 20px;">Please come with <strong>₦700</strong> for materials (Bible study outline, Magazine).</p>
+        </div>
+        <div style="text-align: center; margin-top: 15px;">
+          <button onclick="downloadPDF()">Download PDF</button>
+        </div>
       `;
+    }
+
+    function downloadPDF() {
+      const pdfContent = document.getElementById('pdfContent');
+      html2canvas(pdfContent).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('SU_Camp_Confirmation.pdf');
+      });
     }
 
     function loadApplications() {
