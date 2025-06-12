@@ -97,7 +97,6 @@
 
   <div class="admin-section" id="adminPanel">
     <h2>Admin Panel</h2>
-    <p>Thank you for applying for Scripture Union Abakpa Zone 2025 Long Vacation Camp. We pray it blesses you.</p>
     <input type="text" id="searchInput" placeholder="Search by name...">
     <table>
       <thead>
@@ -152,7 +151,7 @@
     });
 
     function saveApplication(data) {
-      const url = "https://script.google.com/macros/s/AKfycbxVvJAMZlS54nOk3qyromR4ZhofgEjTRC8mkX0_URbUFh5MCIMpeI_bhf5R2Trrs_y1rg/exec";
+      const url = "https://script.google.com/macros/s/AKfycbwYygBvOiicVVLqEXYQejnjMUYOv4k74bPx9Fi_Ye1rK3SBBY9Sm73AyTuHlwkVZRK2mg/exec"; // Replace with your deployed script URL
       fetch(url, {
         method: 'POST',
         body: JSON.stringify(data),
@@ -168,6 +167,7 @@
         <h2>Dear ${data.name} (${data.code}),</h2>
         <p>Thank you for your application to be a part of this year Children, Youth and Student Long Vacation Camp. We believe it will bless you.</p>
         <p>Come with 700 naira to purchase camp materials such as Bible study outline and Magazine.</p>
+        <button onclick="downloadPDF(${JSON.stringify(data)})">Download PDF</button>
       `;
     }
 
