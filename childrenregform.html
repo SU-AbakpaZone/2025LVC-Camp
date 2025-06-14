@@ -158,12 +158,17 @@
     });
 
     function saveApplication(data) {
-      const url = "https://script.google.com/macros/s/AKfycbyPh7B_grd3rw9OvpkrwhZUlkR_7YB3UksIKg7DorK8J0eMKpCduo7ZlojwYCqonQ49/exec";
+      const url = "https://script.google.com/macros/s/AKfycbwDsyXS_Kge7ZsXIx3i1nvE3xmA04aDQe0VCCUJYYwxnebbrVfJtha6Rqm5KGtA6z2e/exec";
       fetch(url, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' }
-      }).catch(error => {
+      })
+      .then(response => response.json())
+      .then(result => {
+        console.log("Saved to Google Sheet:", result);
+      })
+      .catch(error => {
         console.error("Failed to save application:", error);
       });
     }
