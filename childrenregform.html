@@ -9,6 +9,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -48,7 +52,7 @@
     }
     #resetBtn {
       background-color: #dc3545;
-      width: 20%;
+      width: 40%;
     }
     table {
       width: 100%;
@@ -119,16 +123,29 @@
           <th>Phone</th>
           <th>Parent Contact</th>
           <th>Are you SU member?</th>
-          <th>Is it your first time in SU Camp?</th>
+          <th>First Time?</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
     <button onclick="downloadCSV()">Download CSV</button>
-    <button id="resetBtn" onclick="refreshCodes()">Refresh Unique Codes</button>
+    <button id="resetBtn" onclick="resetAllApplications()">Reset All Entries</button>
   </div>
 
   <script>
+    // 🔑 Replace with your Firebase project config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCdbjISyeAR9ogsGTF-uXvlSJnSWusvoQo",
+      authDomain: "su-abakpa-zone-2025lvcamp.firebaseapp.com",
+      projectId: "su-abakpa-zone-2025lvcamp",
+      storageBucket: "su-abakpa-zone-2025lvcamp.firebasestorage.app",
+      messagingSenderId: "1092926118813",
+      appId: "1:1092926118813:web:cc248c3397c31671d8ad74",
+      measurementId: "G-8MS10C22PV"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     const form = document.getElementById('campForm');
     const confirmation = document.getElementById('confirmation');
     const tableBody = document.getElementById('tableBody');
@@ -151,26 +168,17 @@
       data.code = generateUniqueCode();
       saveApplication(data);
       showConfirmation(data);
-      const apps = JSON.parse(localStorage.getItem('applications') || '[]');
-      apps.push(data);
-      localStorage.setItem('applications', JSON.stringify(apps));
       form.reset();
     });
 
     function saveApplication(data) {
-      const url = "https://script.google.com/macros/s/AKfycbwDsyXS_Kge7ZsXIx3i1nvE3xmA04aDQe0VCCUJYYwxnebbrVfJtha6Rqm5KGtA6z2e/exec";
-      fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' }
-      })
-      .then(response => response.json())
-      .then(result => {
-        console.log("Saved to Google Sheet:", result);
-      })
-      .catch(error => {
-        console.error("Failed to save application:", error);
-      });
+      db.collection("applications").add(data)
+        .then(docRef => {
+          console.log("Saved to Firebase with ID:", docRef.id);
+        })
+        .catch(error => {
+          console.error("Failed to save application:", error);
+        });
     }
 
     function showConfirmation(data) {
@@ -218,8 +226,11 @@
     }
 
     function loadApplications() {
-      const data = JSON.parse(localStorage.getItem('applications')) || [];
-      renderTable(data);
+      db.collection("applications").get().then(snapshot => {
+        const data = [];
+        snapshot.forEach(doc => data.push(doc.data()));
+        renderTable(data);
+      });
     }
 
     function renderTable(data) {
@@ -245,36 +256,48 @@
     }
 
     function downloadCSV() {
-      const data = JSON.parse(localStorage.getItem('applications')) || [];
-      let csv = 'Code,Name,Age,Gender,Class Fellowship,Church,School,Class,Phone,Parent Contact,SU Member,First Time\n';
-      data.forEach(app => {
-        csv += `${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp}\n`;
+      db.collection("applications").get().then(snapshot => {
+        let csv = 'Code,Name,Age,Gender,Class Fellowship,Church,School,Class,Phone,Parent Contact,SU Member,First Time\n';
+        snapshot.forEach(doc => {
+          const app = doc.data();
+          csv += `${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'applications.csv';
+        a.click();
       });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'applications.csv';
-      a.click();
     }
 
-    function refreshCodes() {
-      if (!confirm('Are you sure you want to refresh all unique codes?')) return;
-      let data = JSON.parse(localStorage.getItem('applications')) || [];
-      data = data.map(app => {
-        app.code = generateUniqueCode();
-        return app;
+    function resetAllApplications() {
+      if (!confirm("Are you sure you want to reset ALL applications? This will delete all data permanently.")) return;
+
+      db.collection("applications").get().then(snapshot => {
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        return batch.commit();
+      }).then(() => {
+        alert("All applications reset successfully.");
+        renderTable([]);
+      }).catch(error => {
+        console.error("Error resetting applications:", error);
       });
-      localStorage.setItem('applications', JSON.stringify(data));
-      loadApplications();
-      alert('Unique codes refreshed using timestamps.');
     }
 
     document.getElementById('searchInput').addEventListener('input', e => {
       const filter = e.target.value.toLowerCase();
-      const data = JSON.parse(localStorage.getItem('applications')) || [];
-      const filtered = data.filter(app => app.name.toLowerCase().includes(filter));
-      renderTable(filtered);
+      db.collection("applications").get().then(snapshot => {
+        const data = [];
+        snapshot.forEach(doc => {
+          const app = doc.data();
+          if (app.name.toLowerCase().includes(filter)) {
+            data.push(app);
+          }
+        });
+        renderTable(data);
+      });
     });
 
     function checkAdmin(e) {
