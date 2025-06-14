@@ -13,6 +13,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
+  <!-- XLSX + JSZip -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -132,107 +136,42 @@
           <th>Youth Category</th>
           <th>Phone</th>
           <th>Parent Contact</th>
-          <th>Are you SU member?</th>
+          <th>SU Member?</th>
           <th>First Time?</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
     <button onclick="downloadCSV()">Download CSV</button>
+    <button onclick="downloadJSON()">Download JSON</button>
+    <button onclick="downloadXLSX()">Download Excel</button>
+    <button onclick="downloadZIP()">Download All (ZIP)</button>
     <button id="resetBtn" onclick="resetAllApplications()">Reset All Entries</button>
   </div>
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyBqM91ZwmbI72KZgAJBAR4avDobYT6SneU",
-      authDomain: "youth-2025-lvc-reg-form.firebaseapp.com",
-      projectId: "youth-2025-lvc-reg-form",
-      storageBucket: "youth-2025-lvc-reg-form.firebasestorage.app",
-      messagingSenderId: "93823755999",
-      appId: "1:93823755999:web:f0ab8e5c4a3f1131572b6a",
-      measurementId: "G-EHS9LTHFYJ"
+      apiKey: "AIzaSyCdbjISyeAR9ogsGTF-uXvlSJnSWusvoQo",
+      authDomain: "su-abakpa-zone-2025lvcamp.firebaseapp.com",
+      projectId: "su-abakpa-zone-2025lvcamp",
+      storageBucket: "su-abakpa-zone-2025lvcamp.firebasestorage.app",
+      messagingSenderId: "1092926118813",
+      appId: "1:1092926118813:web:cc248c3397c31671d8ad74",
+      measurementId: "G-8MS10C22PV"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const form = document.getElementById('campForm');
-    const confirmation = document.getElementById('confirmation');
-    const tableBody = document.getElementById('tableBody');
-    const adminPanel = document.getElementById('adminPanel');
-
-    function generateUniqueCode() {
-      const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);
-      const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-      return `SU${timestamp}-${random}`;
-    }
-
-    form.addEventListener('submit', e => {
+    function checkAdmin(e) {
       e.preventDefault();
-      if (!form.checkValidity()) {
-        alert("Please complete all required fields.");
-        return;
+      const password = document.getElementById('adminPassword').value;
+      if (password === 'Letmein123@') {
+        document.getElementById('adminLogin').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        loadApplications();
+      } else {
+        alert('Incorrect password');
       }
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-      data.code = generateUniqueCode();
-      saveApplication(data);
-      showConfirmation(data);
-      form.reset();
-    });
-
-    function saveApplication(data) {
-      db.collection("applications").add(data)
-        .then(docRef => {
-          console.log("Saved to Firebase with ID:", docRef.id);
-        })
-        .catch(error => {
-          console.error("Failed to save application:", error);
-        });
-    }
-
-    function showConfirmation(data) {
-      confirmation.style.display = 'block';
-      confirmation.innerHTML = `
-        <div id="pdfContent" style="padding: 20px; background-color: #ffffff; border: 2px solid #007bff; border-radius: 10px;">
-          <div style="text-align: center;">
-            <img src="LOGO_3.png" alt="Logo" style="width: 100px; margin-bottom: 20px;" />
-            <h2 style="color: #083f16;">Scripture Union Nigeria, Abakpa Zone</h2>
-            <p><strong>2025 Children, Youth & Students Long Vacation Camp</strong></p>
-            <h3 style="color: #007bff;">Application Confirmation</h3>
-          </div>
-          <p><strong>Name:</strong> ${data.name}</p>
-          <p><strong>Code:</strong> ${data.code}</p>
-          <p><strong>Age:</strong> ${data.age}</p>
-          <p><strong>Gender:</strong> ${data.gender}</p>
-          <p><strong>Fellowship Group:</strong> ${data.class_fellowship}</p>
-          <p><strong>Church:</strong> ${data.church}</p>
-          <p><strong>School:</strong> ${data.school}</p>
-          <p><strong>Class:</strong> ${data.class}</p>
-          <p><strong>Youth Category:</strong> ${data.youth_category}</p>
-          <p><strong>Phone:</strong> ${data.phone}</p>
-          <p><strong>Parent/Guardian Contact:</strong> ${data.parent_contact}</p>
-          <p><strong>SU Member:</strong> ${data.are_you_su_member}</p>
-          <p><strong>First Time in SU Camp:</strong> ${data.is_it_your_first_time_in_su_camp}</p>
-          <p style="margin-top: 20px;">Please come with <strong>₦700</strong> for materials (Bible study outline, Magazine).</p>
-        </div>
-        <div style="text-align: center; margin-top: 15px;">
-          <button onclick="downloadPDF()">Download PDF</button>
-        </div>
-      `;
-    }
-
-    function downloadPDF() {
-      const pdfContent = document.getElementById('pdfContent');
-      html2canvas(pdfContent).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF();
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save('SU_Camp_Confirmation.pdf');
-      });
     }
 
     function loadApplications() {
@@ -244,6 +183,7 @@
     }
 
     function renderTable(data) {
+      const tableBody = document.getElementById('tableBody');
       tableBody.innerHTML = '';
       data.forEach(app => {
         const row = document.createElement('tr');
@@ -271,7 +211,7 @@
         let csv = 'Code,Name,Age,Gender,Class Fellowship,Church,School,Class,Youth Category,Phone,Parent Contact,SU Member,First Time\n';
         snapshot.forEach(doc => {
           const app = doc.data();
-          csv += `${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.youth_category || ''},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp}\n`;
+          csv += ${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.youth_category || ''},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp}\n;
         });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -279,6 +219,62 @@
         a.href = url;
         a.download = 'applications.csv';
         a.click();
+      });
+    }
+
+    function downloadJSON() {
+      db.collection("applications").get().then(snapshot => {
+        const data = [];
+        snapshot.forEach(doc => data.push(doc.data()));
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'applications.json';
+        a.click();
+      });
+    }
+
+    function downloadXLSX() {
+      db.collection("applications").get().then(snapshot => {
+        const data = [];
+        snapshot.forEach(doc => data.push(doc.data()));
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
+        XLSX.writeFile(workbook, "applications.xlsx");
+      });
+    }
+
+    function downloadZIP() {
+      db.collection("applications").get().then(snapshot => {
+        const data = [];
+        snapshot.forEach(doc => data.push(doc.data()));
+
+        const csv = [
+          'Code,Name,Age,Gender,Class Fellowship,Church,School,Class,Youth Category,Phone,Parent Contact,SU Member,First Time',
+          ...data.map(app => ${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.youth_category || ''},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp})
+        ].join('\n');
+
+        const json = JSON.stringify(data, null, 2);
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
+        const xlsxBlob = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+
+        const zip = new JSZip();
+        zip.file("applications.csv", csv);
+        zip.file("applications.json", json);
+        zip.file("applications.xlsx", xlsxBlob);
+
+        zip.generateAsync({ type: "blob" }).then(content => {
+          const url = URL.createObjectURL(content);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = "applications_bundle.zip";
+          a.click();
+        });
       });
     }
 
@@ -310,18 +306,6 @@
         renderTable(data);
       });
     });
-
-    function checkAdmin(e) {
-      e.preventDefault();
-      const password = document.getElementById('adminPassword').value;
-      if (password === 'Letmein123@') {
-        document.getElementById('adminLogin').style.display = 'none';
-        adminPanel.style.display = 'block';
-        loadApplications();
-      } else {
-        alert('Incorrect password');
-      }
-    }
   </script>
 </body>
 </html>
