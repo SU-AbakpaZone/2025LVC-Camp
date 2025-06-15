@@ -211,7 +211,7 @@
         let csv = 'Code,Name,Age,Gender,Class Fellowship,Church,School,Class,Youth Category,Phone,Parent Contact,SU Member,First Time\n';
         snapshot.forEach(doc => {
           const app = doc.data();
-          csv += ${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.youth_category || ''},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp}\n;
+          csv += `${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.youth_category || ''},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp}\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -254,7 +254,7 @@
 
         const csv = [
           'Code,Name,Age,Gender,Class Fellowship,Church,School,Class,Youth Category,Phone,Parent Contact,SU Member,First Time',
-          ...data.map(app => ${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.youth_category || ''},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp})
+          ...data.map(app => `${app.code},${app.name},${app.age},${app.gender},${app.class_fellowship},${app.church},${app.school},${app.class},${app.youth_category || ''},${app.phone},${app.parent_contact},${app.are_you_su_member},${app.is_it_your_first_time_in_su_camp}`)
         ].join('\n');
 
         const json = JSON.stringify(data, null, 2);
