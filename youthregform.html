@@ -90,7 +90,7 @@
       await db.collection('applications').add(data);
 
       const confirmation = document.getElementById('confirmation');
-      confirmation.innerHTML = `<h3>Thank you, ${data.name}!</h3><p>Your code: ${data.code}</p><button onclick='downloadApplicantPDF(${JSON.stringify(data)})'>Download PDF</button>`;
+      confirmation.innerHTML = `<h3>Registration Successful. We believe this camp will bless you, ${data.name}! <br>Come with #700 to purchase of camp materials e.g. Bible study, Magazine etc</h3><p>Your code: ${data.code}</p><button onclick='downloadApplicantPDF(${JSON.stringify(data)})'>Download PDF</button>`;
       confirmation.classList.remove('hidden');
       form.reset();
     });
