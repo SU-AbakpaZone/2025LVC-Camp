@@ -66,13 +66,13 @@
 
   <script>
     const firebaseConfig = {
-     apiKey: "AIzaSyCdbjISyeAR9ogsGTF-uXvlSJnSWusvoQo",
+      apiKey: "AIzaSyCdbjISyeAR9ogsGTF-uXvlSJnSWusvoQo",
       authDomain: "su-abakpa-zone-2025lvcamp.firebaseapp.com",
       projectId: "su-abakpa-zone-2025lvcamp",
-      storageBucket: "su-abakpa-zone-2025lvcamp.firebasestorage.app",
+      storageBucket: "su-abakpa-zone-2025lvcamp.appspot.com",
       messagingSenderId: "1092926118813",
       appId: "1:1092926118813:web:cc248c3397c31671d8ad74",
-      measurementId: "G-8MS10C22PV"
+      measurementId: "G-8MS10C22PV"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -86,7 +86,7 @@
       await db.collection('applications').add(data);
 
       const confirmation = document.getElementById('confirmation');
-      confirmation.innerHTML = <h3>Registration Successful. We believe this camp will bless you, ${data.name}! <br>Come with #700 to purchase of camp materials e.g. Bible study, Magazine etc</h3><p>Your code: ${data.code}</p><button onclick='downloadApplicantPDF(${JSON.stringify(data)})'>Download PDF</button>;
+      confirmation.innerHTML = `<h3>Registration Successful. We believe this camp will bless you, ${data.name}!<br>Come with #700 to purchase camp materials e.g. Bible study, Magazine etc</h3><p>Your code: ${data.code}</p><button onclick='downloadApplicantPDF(${JSON.stringify(data)})'>Download PDF</button>`;
       confirmation.classList.remove('hidden');
       form.reset();
     });
@@ -96,17 +96,16 @@
       const doc = new jsPDF();
       doc.setFillColor(8, 63, 22);
       doc.rect(0, 0, 210, 297, 'F');
-      doc.setTextColor(255,255,255);
+      doc.setTextColor(255, 255, 255);
       doc.setFontSize(16);
       doc.text('Scripture Union Abakpa Zone 2025 LVC', 20, 20);
       doc.addImage('LOGO_3.png', 'PNG', 150, 10, 40, 40);
-      doc.setTextColor(255,255,255);
       let y = 60;
       for (const [key, val] of Object.entries(data)) {
-        doc.text(${key}: ${val}, 20, y);
+        doc.text(`${key}: ${val}`, 20, y);
         y += 10;
       }
-      doc.save(SU_Camp_${data.code}.pdf);
+      doc.save(`SU_Camp_${data.code}.pdf`);
     }
 
     function checkAdmin(e) {
@@ -130,7 +129,7 @@
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
       data.forEach(app => {
-        const row = <tr><td>${app.code}</td><td>${app.name}</td><td>${app.age}</td><td>${app.phone}</td></tr>;
+        const row = `<tr><td>${app.code}</td><td>${app.name}</td><td>${app.age}</td><td>${app.phone}</td></tr>`;
         tbody.innerHTML += row;
       });
     }
@@ -146,11 +145,11 @@
       const snapshot = await db.collection('applications').get();
       const data = snapshot.docs.map(doc => doc.data());
       if (type === 'csv') {
-        let csv = 'Code,Name,Age,Phone\n' + data.map(a => ${a.code},${a.name},${a.age},${a.phone}).join('\n');
-        const blob = new Blob([csv], {type:'text/csv'});
+        let csv = 'Code,Name,Age,Phone\n' + data.map(a => `${a.code},${a.name},${a.age},${a.phone}`).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
         saveBlob(blob, 'applications.csv');
       } else if (type === 'json') {
-        const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         saveBlob(blob, 'applications.json');
       } else if (type === 'xlsx') {
         const ws = XLSX.utils.json_to_sheet(data);
@@ -159,14 +158,14 @@
         XLSX.writeFile(wb, 'applications.xlsx');
       } else if (type === 'zip') {
         const zip = new JSZip();
-        zip.file('applications.json', JSON.stringify(data,null,2));
-        zip.file('applications.csv', 'Code,Name,Age,Phone\n' + data.map(a => ${a.code},${a.name},${a.age},${a.phone}).join('\n'));
+        zip.file('applications.json', JSON.stringify(data, null, 2));
+        zip.file('applications.csv', 'Code,Name,Age,Phone\n' + data.map(a => `${a.code},${a.name},${a.age},${a.phone}`).join('\n'));
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Applications');
-        const xlsxBlob = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+        const xlsxBlob = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
         zip.file('applications.xlsx', xlsxBlob);
-        zip.generateAsync({type:'blob'}).then(content => saveBlob(content, 'applications.zip'));
+        zip.generateAsync({ type: 'blob' }).then(content => saveBlob(content, 'applications.zip'));
       }
     }
 
