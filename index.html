@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>2025 SU Vacation Camp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    
     * {
       box-sizing: border-box;
       margin: 0;
@@ -57,31 +57,31 @@
     }
 
     .logo img {
-      
       height: 80px;
     }
 
     h1 {
-      font-size: 3em;
+      font-size: 2.5em;
       margin-bottom: 10px;
     }
 
     p {
-      font-size: 1.3em;
-      margin-bottom: 30px;
+      font-size: 1.2em;
+      margin-bottom: 20px;
     }
 
     .buttons {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 15px;
       justify-content: center;
+      margin-top: 20px;
     }
 
     .buttons a {
       text-decoration: none;
       background-color: #ff6600;
-      padding: 15px 25px;
+      padding: 12px 20px;
       border-radius: 10px;
       color: white;
       font-weight: bold;
@@ -91,6 +91,47 @@
 
     .buttons a:hover {
       background-color: #e65c00;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.6em;
+      }
+
+      p {
+        font-size: 1em;
+      }
+
+      .buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .buttons a {
+        width: 100%;
+        text-align: center;
+        font-size: 1em;
+        padding: 12px;
+      }
+
+      .logo img {
+        height: 60px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .overlay {
+        padding: 20px 10px;
+      }
+
+      h1 {
+        font-size: 1.3em;
+      }
+
+      .buttons a {
+        font-size: 0.95em;
+        padding: 10px;
+      }
     }
   </style>
 </head>
@@ -103,8 +144,6 @@
     <img src="PRAISE.jpg" alt="Slide 3">
     <img src="BIBLE STUDY.jpg" alt="Slide 4">
     <img src="camp_2.jpg" alt="Slide 5">
-    
-    <!-- Add more slides as needed -->
   </div>
 
   <!-- Logo -->
@@ -114,21 +153,19 @@
 
   <!-- Overlay Content -->
   <div class="overlay">
-    <br><br>
     <h1>Welcome to Scripture Union Nigeria, Abakpa zone <br>2025 Children, Youth & Students Long Vacation Camp Registration Portal</h1>
-    <br><p>Theme: <strong>Build on Build Up (Jude 1:20)</strong><br><br>Date:<strong>Anglican Cathedral Church of St Cyprian Abakpa Nike, Enugu</strong><br>Date: <strong>Wednesday 6th - Saturday 9th August 2025</strong></p>
-    <p></p>
-    <p></p>
+    <p><strong>Theme:</strong> Build on Build Up (Jude 1:20)</p>
+    <p><strong>Venue:</strong> Anglican Cathedral Church of St Cyprian Abakpa Nike, Enugu</p>
+    <p><strong>Date:</strong> Wednesday 6th - Saturday 9th August 2025</p>
+
     <div class="buttons">
-      <a href="childrenregform.html" target="_blank">Registeration portal for Children</a>
-      <a href="youthregform.html" target="_blank">Registeration portal for Youth (Secondary/SUCF)</a>
-      <a href="pilgrimregform.html" target="_blank">Registeration portal for Pilgrims</a>
-
-
-    <p>Cliick to register, <br>copy out your resgistration code and keep it safe</p>
-    <p>Registration is free, access to the camp is only for those who registered
-    <br>Camp material will be available at a total sum of 700 naira.</p>
+      <a href="childrenregform.html" target="_blank">Registration Portal for Children</a>
+      <a href="youthregform.html" target="_blank">Registration Portal for Youth (Secondary/SUCF)</a>
+      <a href="pilgrimregform.html" target="_blank">Registration Portal for Pilgrims</a>
     </div>
+
+    <p>Click to register, copy out your registration code and keep it safe.</p>
+    <p>Registration is free. Access to the camp is only for those who registered.<br>Camp material will be available at a total sum of ₦700.</p>
   </div>
 
   <!-- JavaScript for slideshow -->
@@ -140,8 +177,7 @@
       slides[current].classList.remove('active');
       current = (current + 1) % slides.length;
       slides[current].classList.add('active');
-    }, 5000); // Change every 3 seconds
+    }, 5000);
   </script>
-  
 </body>
 </html>
