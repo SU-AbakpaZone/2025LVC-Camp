@@ -14,50 +14,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #083f16;
-      color: #fff;
-    }
-    form, .admin-section, #confirmation {
-      max-width: 700px;
-      margin: 0 auto 30px;
-      padding: 20px;
-      background: #c8f1d1;
-      color: #000;
-      border-radius: 8px;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      background: #fff;
-      color: #000;
-    }
-    th {
-      background: #007bff;
-      color: #fff;
-    }
-    .logo img {
-      width: 100px;
-    }
-    .hidden {
-      display: none;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #083f16; color: #fff; }
+    form, .admin-section, #confirmation { max-width: 700px; margin: 0 auto 30px; padding: 20px; background: #c8f1d1; color: #000; border-radius: 8px; }
+    input, select, button { width: 100%; padding: 10px; margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; background: #fff; color: #000; }
+    th { background: #007bff; color: #fff; }
+    .logo img { width: 100px; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-
-  <!-- Registration Form -->
   <form id="campForm">
     <div class="logo"><img src="LOGO_3.png" alt="Camp Logo"></div>
     <h2>Scripture Union Abakpa Zone 2025 LVC <br> Pilgrims Registration Portal</h2>
@@ -65,21 +32,15 @@
     <input type="text" name="gender" placeholder="Gender" required />
     <input type="text" name="class_fellowship" placeholder="Fellowship Group" required />
     <input type="text" name="church" placeholder="Church" required />
-    <input type="text" name="position" placeholder="Position (e.g. Zonal Rep)" required />
     <input type="tel" name="phone" placeholder="Phone Number" required />
-    <input type="tel" name="parent_contact" placeholder="Parent/Guardian Contact" required />
     <input type="text" name="are_you_su_member" placeholder="Are you SU member?" required />
     <input type="text" name="is_it_your_first_time_in_su_camp" placeholder="First time at SU camp?" required />
+    <input type="text" name="position" placeholder="Position (e.g Zonal Rep) - Optional" />
     <button type="submit">Submit</button>
   </form>
 
-  <!-- Confirmation Area -->
-  <div id="confirmation" class="hidden">
-    <div id="confirmationContent"></div>
-    <button type="button" id="pdfButton" class="hidden">Download PDF</button>
-  </div>
+  <div id="confirmation" class="hidden"></div>
 
-  <!-- Admin Login -->
   <div id="adminLogin">
     <form onsubmit="checkAdmin(event)">
       <input type="password" id="adminPassword" placeholder="Admin password" required />
@@ -87,11 +48,10 @@
     </form>
   </div>
 
-  <!-- Admin Panel -->
   <div id="adminPanel" class="admin-section hidden">
     <input type="text" id="searchInput" placeholder="Search by name...">
     <table>
-      <thead><tr><th>Code</th><th>Name</th><th>Position</th><th>Phone</th></tr></thead>
+      <thead><tr><th>Code</th><th>Name</th><th>Phone</th><th>Position</th></tr></thead>
       <tbody id="tableBody"></tbody>
     </table>
     <button onclick="downloadAll('csv')">Download CSV</button>
@@ -111,34 +71,21 @@
       appId: "1:882676081318:web:7b30944d4cf74d37714a67",
       measurementId: "G-75GT0HF30E"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-
-    let currentData = null;
 
     document.getElementById('campForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
       const data = Object.fromEntries(new FormData(form));
       data.code = 'SU' + Date.now();
-      data.date = new Date().toLocaleString();
 
       await db.collection('applications').add(data);
 
-      currentData = data;
-      document.getElementById('confirmationContent').innerHTML = `
-        <h3>Registration Successful. We believe this camp will bless you, ${data.name}!<br>
-        Come with ₦700 to purchase camp materials e.g. Bible study, Magazine etc.</h3>
-        <p><strong>Your Code:</strong> ${data.code}</p>
-      `;
-      document.getElementById('confirmation').classList.remove('hidden');
-      document.getElementById('pdfButton').classList.remove('hidden');
+      const confirmation = document.getElementById('confirmation');
+      confirmation.innerHTML = `<h3>Registration Successful. We believe this camp will bless you, ${data.name}! <br>Come with #700 to purchase of camp materials e.g. Bible study, Magazine etc</h3><p>Your code: ${data.code}</p><button onclick='downloadApplicantPDF(${JSON.stringify(data)})'>Download PDF</button>`;
+      confirmation.classList.remove('hidden');
       form.reset();
-    });
-
-    document.getElementById('pdfButton').addEventListener('click', () => {
-      if (currentData) downloadApplicantPDF(currentData);
     });
 
     function downloadApplicantPDF(data) {
@@ -146,30 +93,17 @@
       const doc = new jsPDF();
       doc.setFillColor(8, 63, 22);
       doc.rect(0, 0, 210, 297, 'F');
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(255,255,255);
       doc.setFontSize(16);
       doc.text('Scripture Union Abakpa Zone 2025 LVC', 20, 20);
-
-      const logo = new Image();
-      logo.src = 'LOGO_3.png';
-      logo.onload = () => {
-        doc.addImage(logo, 'PNG', 150, 10, 40, 40);
-        let y = 60;
-        for (const [key, val] of Object.entries(data)) {
-          doc.text(`${key}: ${val}`, 20, y);
-          y += 10;
-        }
-        doc.save(`SU_Camp_${data.code}.pdf`);
-      };
-      logo.onerror = () => {
-        alert("Logo image not found. Proceeding without logo.");
-        let y = 60;
-        for (const [key, val] of Object.entries(data)) {
-          doc.text(`${key}: ${val}`, 20, y);
-          y += 10;
-        }
-        doc.save(`SU_Camp_${data.code}.pdf`);
-      };
+      doc.addImage('LOGO_3.png', 'PNG', 150, 10, 40, 40);
+      doc.setTextColor(255,255,255);
+      let y = 60;
+      for (const [key, val] of Object.entries(data)) {
+        doc.text(`${key}: ${val}`, 20, y);
+        y += 10;
+      }
+      doc.save(`SU_Camp_${data.code}.pdf`);
     }
 
     function checkAdmin(e) {
@@ -193,7 +127,7 @@
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
       data.forEach(app => {
-        const row = `<tr><td>${app.code}</td><td>${app.name}</td><td>${app.position || ''}</td><td>${app.phone}</td></tr>`;
+        const row = `<tr><td>${app.code}</td><td>${app.name}</td><td>${app.phone}</td><td>${app.position || ''}</td></tr>`;
         tbody.innerHTML += row;
       });
     }
@@ -208,15 +142,12 @@
     async function downloadAll(type) {
       const snapshot = await db.collection('applications').get();
       const data = snapshot.docs.map(doc => doc.data());
-
       if (type === 'csv') {
-        let csv = 'Code,Name,Position,Phone\n' + data.map(a =>
-          `"${a.code}","${a.name.replace(/"/g, '""')}","${(a.position || '').replace(/"/g, '""')}","${a.phone}"`
-        ).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
+        let csv = 'Code,Name,Phone,Position\n' + data.map(a => `${a.code},${a.name},${a.phone},${a.position || ''}`).join('\n');
+        const blob = new Blob([csv], {type:'text/csv'});
         saveBlob(blob, 'applications.csv');
       } else if (type === 'json') {
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
         saveBlob(blob, 'applications.json');
       } else if (type === 'xlsx') {
         const ws = XLSX.utils.json_to_sheet(data);
@@ -225,19 +156,14 @@
         XLSX.writeFile(wb, 'applications.xlsx');
       } else if (type === 'zip') {
         const zip = new JSZip();
-        zip.file('applications.json', JSON.stringify(data, null, 2));
-        const csv = 'Code,Name,Position,Phone\n' + data.map(a =>
-          `"${a.code}","${a.name.replace(/"/g, '""')}","${(a.position || '').replace(/"/g, '""')}","${a.phone}"`
-        ).join('\n');
-        zip.file('applications.csv', csv);
+        zip.file('applications.json', JSON.stringify(data,null,2));
+        zip.file('applications.csv', 'Code,Name,Phone,Position\n' + data.map(a => `${a.code},${a.name},${a.phone},${a.position || ''}`).join('\n'));
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Applications');
-        const xlsxBlob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
+        const xlsxBlob = XLSX.write(wb, {bookType:'xlsx', type:'array'});
         zip.file('applications.xlsx', xlsxBlob);
-        zip.generateAsync({ type: 'blob' }).then(content => saveBlob(content, 'applications.zip'));
+        zip.generateAsync({type:'blob'}).then(content => saveBlob(content, 'applications.zip'));
       }
     }
 
@@ -247,7 +173,6 @@
       a.href = url;
       a.download = filename;
       a.click();
-      URL.revokeObjectURL(url);
     }
 
     async function resetAllApplications() {
@@ -259,6 +184,5 @@
       loadApplications();
     }
   </script>
-
 </body>
 </html>
