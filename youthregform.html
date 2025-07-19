@@ -4,193 +4,414 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SU Camp Application & Admin Panel</title>
-
-  <!-- Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: #083f16; color: #fff; }
-    form, .admin-section, #confirmation { max-width: 700px; margin: 0 auto 30px; padding: 20px; background: #c8f1d1; color: #000; border-radius: 8px; }
-    input, select, button { width: 100%; padding: 10px; margin-bottom: 10px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ccc; padding: 8px; background: #fff; color: #000; }
-    th { background: #007bff; color: #fff; }
-    .logo img { width: 100px; }
-    .hidden { display: none; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #0a4220;
+      color: white;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #ddcfa0;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      width: 100px;
+    }
+    form, .admin-section, #confirmation {
+      max-width: 600px;
+      margin: 0 auto 40px;
+      padding: 20px;
+      background-color: #ddcfa0;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      color: #333;
+    }
+    input, select, button, textarea {
+      width: 95%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #330833;
+      color: white;
+      cursor: pointer;
+      width: 20%;
+      transition: all 0.3s;
+    }
+    button:disabled {
+      background-color: #666;
+      cursor: not-allowed;
+    }
+    #resetBtn {
+      background-color: #dc3545;
+      width: 20%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background-color: white;
+      color: #333;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    .admin-section {
+      display: none;
+    }
+    #confirmation button {
+      width: 100%;
+      margin-top: 15px;
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .error-message {
+      color: #dc3545;
+      margin-top: 5px;
+    }
   </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
 </head>
 <body>
   <form id="campForm">
-    <div class="logo"><img src="LOGO_3.png" alt="Camp Logo"></div>
-    <h2>Scripture Union Abakpa Zone 2025 LVC <br> Youth Registration Portal</h2>
+    <div class="logo">
+      <img src="LOGO_3.png" alt="Logo">
+    </div>
+    <h2><b>Scripture Union Nigeria, Abakpa Zone.</b> <br>2025 Children, Youth & Students Long Vacation Camp.<br>Youth Registration Portal</h2>
     <input type="text" name="name" placeholder="Full Name" required />
-    <input type="text" name="age" placeholder="Age" required />
-    <input type="text" name="gender" placeholder="Gender" required />
+    <input type="number" name="age" placeholder="Age" required min="1" max="30" />
+    <select name="gender" required>
+      <option value="">Select Gender</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+    </select>
     <input type="text" name="class_fellowship" placeholder="Fellowship Group" required />
     <input type="text" name="church" placeholder="Church" required />
     <input type="text" name="school" placeholder="School" required />
     <input type="text" name="class" placeholder="Class" required />
     <select name="youth_category" required>
       <option value="">Select Youth Category</option>
-      <option>SUCF</option><option>SCHOOL LEAVER</option><option>SECONDARY SCHOOL</option><option>GRADUATE</option>
+      <option value="SUCF">SUCF</option>
+      <option value="SCHOOL LEAVER">School Leaver</option>
+      <option value="STUDENT">Student</option>
     </select>
-    <input type="tel" name="phone" placeholder="Phone Number" required />
-    <input type="tel" name="parent_contact" placeholder="Parent/Guardian Contact" required />
-    <input type="text" name="are_you_su_member" placeholder="Are you SU member?" required />
-    <input type="text" name="is_it_your_first_time_in_su_camp" placeholder="First time at SU camp?" required />
-    <button type="submit">Submit</button>
+    <input type="tel" name="phone" placeholder="Phone Number (11 digits)" required pattern="[0-9]{11}" />
+    <input type="tel" name="parent_contact" placeholder="Parent/Guardian Contact (11 digits)" required pattern="[0-9]{11}" />
+    <select name="are_you_su_member" required>
+      <option value="">Are you SU member?</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+    <select name="is_it_your_first_time_in_su_camp" required>
+      <option value="">Is it your first time in SU camp?</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+    <button type="submit" id="submitBtn">Submit</button>
+    <div id="formError" class="error-message"></div>
   </form>
 
-  <div id="confirmation" class="hidden"></div>
+  <div id="confirmation" style="display:none;"></div>
 
   <div id="adminLogin">
-    <form onsubmit="checkAdmin(event)">
-      <input type="password" id="adminPassword" placeholder="Admin password" required />
-      <button type="submit">Login</button>
+    <h2>Admin Login</h2>
+    <form id="adminForm">
+      <input type="password" id="adminPassword" placeholder="Enter admin password" required />
+      <button type="submit" id="loginBtn">Login</button>
+      <div id="loginError" class="error-message"></div>
     </form>
   </div>
 
-  <div id="adminPanel" class="admin-section hidden">
+  <div class="admin-section" id="adminPanel">
+    <h2>Admin Panel</h2>
     <input type="text" id="searchInput" placeholder="Search by name...">
     <table>
-      <thead><tr><th>Code</th><th>Name</th><th>Age</th><th>Phone</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Class Fellowship</th>
+          <th>Church</th>
+          <th>School</th>
+          <th>Class</th>
+          <th>Youth Category</th>
+          <th>Phone</th>
+          <th>Parent Contact</th>
+          <th>SU Member?</th>
+          <th>First Time?</th>
+        </tr>
+      </thead>
       <tbody id="tableBody"></tbody>
     </table>
-    <button onclick="downloadAll('csv')">Download CSV</button>
-    <button onclick="downloadAll('json')">Download JSON</button>
-    <button onclick="downloadAll('xlsx')">Download Excel</button>
-    <button onclick="downloadAll('zip')">Download ZIP</button>
-    <button onclick="resetAllApplications()" style="background:red;">Reset All</button>
+    <button onclick="downloadCSV()" id="downloadBtn">Download CSV</button>
+    <button id="resetBtn" onclick="resetSerial()">Reset Serial Number</button>
+    <div id="adminError" class="error-message"></div>
   </div>
 
   <script>
+    // Firebase config
     const firebaseConfig = {
-      apiKey: "AIzaSyBqM91ZwmbI72KZgAJBAR4avDobYT6SneU",
-      authDomain: "youth-2025-lvc-reg-form.firebaseapp.com",
-      projectId: "youth-2025-lvc-reg-form",
-      storageBucket: "youth-2025-lvc-reg-form.firebasestorage.app",
-      messagingSenderId: "93823755999",
-      appId: "1:93823755999:web:f0ab8e5c4a3f1131572b6a",
-      measurementId: "G-EHS9LTHFYJ"
+      apiKey: "AIzaSyAFBrL5Mshf-YWUOSF1Qc5029i-ZVTVrw8",
+      authDomain: "su-second-batch-e15ee.firebaseapp.com",
+      projectId: "su-second-batch-e15ee",
+      storageBucket: "su-second-batch-e15ee.appspot.com",
+      messagingSenderId: "1050830920257",
+      appId: "1:1050830920257:web:1e23474ef8ae80cdc644c0",
+      measurementId: "G-LZYXV8MEQP"
     };
-    firebase.initializeApp(firebaseConfig);
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    document.getElementById('campForm').addEventListener('submit', async (e) => {
+    // Enable debug logging
+    firebase.firestore.setLogLevel('debug');
+
+    // DOM elements
+    const form = document.getElementById('campForm');
+    const confirmation = document.getElementById('confirmation');
+    const tableBody = document.getElementById('tableBody');
+    const adminPanel = document.getElementById('adminPanel');
+    const adminForm = document.getElementById('adminForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const formError = document.getElementById('formError');
+    const loginError = document.getElementById('loginError');
+    const adminError = document.getElementById('adminError');
+
+    // Initialize serial number if not exists
+    if (!localStorage.getItem('serialNumber')) {
+      localStorage.setItem('serialNumber', '0');
+    }
+
+    function getSerialNumber() {
+      let serial = parseInt(localStorage.getItem('serialNumber')) + 1;
+      localStorage.setItem('serialNumber', serial.toString());
+      return serial;
+    }
+
+    // Form submission handler
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const form = e.target;
-      const data = Object.fromEntries(new FormData(form));
-      data.code = 'SU' + Date.now();
+      formError.textContent = '';
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
 
-      await db.collection('applications').add(data);
+      try {
+        // Validate form
+        if (!form.checkValidity()) {
+          throw new Error('Please fill all required fields correctly');
+        }
 
-      const confirmation = document.getElementById('confirmation');
-      confirmation.innerHTML = `<h3>Registration Successful. We believe this camp will bless you, ${data.name}! <br>Come with #700 to purchase of camp materials e.g. Bible study, Magazine etc</h3><p>Your code: ${data.code}</p>
-      <button onclick='downloadApplicantPDF(${JSON.stringify(data)})'>Download PDF</button>`;
-      confirmation.classList.remove('hidden');
-      form.reset();
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        data.code = `SU${getSerialNumber().toString().padStart(4, '0')}`;
+        data.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+
+        console.log('Submitting data:', data);
+        
+        // Add to Firestore
+        const docRef = await db.collection("applications").add(data);
+        console.log('Document written with ID: ', docRef.id);
+        
+        showConfirmation(data);
+        form.reset();
+      } catch (err) {
+        console.error("Submission failed: ", err);
+        formError.textContent = err.message || "Submission failed. Please try again.";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit';
+      }
     });
 
-    function downloadApplicantPDF(data) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFillColor(8, 63, 22);
-      doc.rect(0, 0, 210, 297, 'F');
-      doc.setTextColor(255,255,255);
-      doc.setFontSize(16);
-      doc.text('Scripture Union Abakpa Zone 2025 LVC', 20, 20);
-      doc.addImage('LOGO_3.png', 'PNG', 150, 10, 40, 40);
-      doc.setTextColor(255,255,255);
-      let y = 60;
-      for (const [key, val] of Object.entries(data)) {
-        doc.text(`${key}: ${val}`, 20, y);
-        y += 10;
-      }
-      doc.save(`SU_Camp_${data.code}.pdf`);
+    function showConfirmation(data) {
+      confirmation.style.display = 'block';
+      confirmation.innerHTML = `
+        <h2>Dear ${data.name} (${data.code}),</h2>
+        <p>Thank you for your application to be a part of this year Children, Youth and Student Long Vacation Camp. We believe it will bless you.</p>
+        <p>Come with 700 naira to purchase camp materials such as Bible study outline and Magazine.</p>
+        <button onclick="downloadResponse(${JSON.stringify(data).replace(/"/g, '&quot;')})">Download Confirmation</button>
+      `;
     }
 
-    function checkAdmin(e) {
+    function downloadResponse(data) {
+      try {
+        const content = `SU CAMP\n\nName: ${data.name}\nCode: ${data.code}\nAge: ${data.age}\nGender: ${data.gender}\nClass: ${data.class_fellowship}\nChurch: ${data.church}\nPhone: ${data.phone}\nParent Contact: ${data.parent_contact}\nYouth Category: ${data.youth_category}\nAre you SU Member: ${data.are_you_su_member}\nIs it your first time in SU Camp: ${data.is_it_your_first_time_in_su_camp}\n\nThank you for your application. Please come with 700 naira.`;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${data.code}_confirmation.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error('Download failed:', err);
+        alert('Failed to generate confirmation. Please try again.');
+      }
+    }
+
+    // Admin login handler
+    adminForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      if (document.getElementById('adminPassword').value === 'Letmein123@') {
-        document.getElementById('adminLogin').classList.add('hidden');
-        document.getElementById('adminPanel').classList.remove('hidden');
-        loadApplications();
-      } else {
-        alert('Wrong password');
-      }
-    }
+      loginError.textContent = '';
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<span class="loading"></span> Logging in...';
 
+      try {
+        const password = document.getElementById('adminPassword').value;
+        if (password !== 'Letmein123@') {
+          throw new Error('Incorrect password');
+        }
+
+        document.getElementById('adminLogin').style.display = 'none';
+        adminPanel.style.display = 'block';
+        
+        console.log('Loading applications...');
+        await loadApplications();
+        console.log('Applications loaded successfully');
+      } catch (err) {
+        console.error('Admin login error:', err);
+        loginError.textContent = err.message;
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+      }
+    });
+
+    // Load applications data
     async function loadApplications() {
-      const snapshot = await db.collection('applications').get();
-      const data = snapshot.docs.map(doc => doc.data());
-      renderTable(data);
+      adminError.textContent = '';
+      try {
+        const snapshot = await db.collection("applications").orderBy("timestamp", "desc").get();
+        
+        if (snapshot.empty) {
+          tableBody.innerHTML = '<tr><td colspan="13">No applications found</td></tr>';
+          return;
+        }
+
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log('Applications loaded:', data.length);
+        renderTable(data);
+      } catch (err) {
+        console.error("Error loading applications: ", err);
+        adminError.textContent = "Error loading applications: " + err.message;
+        tableBody.innerHTML = '<tr><td colspan="13">Error loading data</td></tr>';
+      }
     }
 
     function renderTable(data) {
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '';
+      tableBody.innerHTML = '';
       data.forEach(app => {
-        const row = `<tr><td>${app.code}</td><td>${app.name}</td><td>${app.age}</td><td>${app.phone}</td></tr>`;
-        tbody.innerHTML += row;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${app.code}</td>
+          <td>${app.name}</td>
+          <td>${app.age}</td>
+          <td>${app.gender}</td>
+          <td>${app.class_fellowship}</td>
+          <td>${app.church}</td>
+          <td>${app.school}</td>
+          <td>${app.class}</td>
+          <td>${app.youth_category}</td>
+          <td>${app.phone}</td>
+          <td>${app.parent_contact}</td>
+          <td>${app.are_you_su_member}</td>
+          <td>${app.is_it_your_first_time_in_su_camp}</td>
+        `;
+        tableBody.appendChild(row);
       });
     }
 
-    document.getElementById('searchInput').addEventListener('input', async e => {
-      const filter = e.target.value.toLowerCase();
-      const snapshot = await db.collection('applications').get();
-      const data = snapshot.docs.map(doc => doc.data()).filter(app => app.name.toLowerCase().includes(filter));
-      renderTable(data);
-    });
-
-    async function downloadAll(type) {
-      const snapshot = await db.collection('applications').get();
-      const data = snapshot.docs.map(doc => doc.data());
-      if (type === 'csv') {
-        let csv = 'Code,Name,Age,Phone\n' + data.map(a => `${a.code},${a.name},${a.age},${a.phone}`).join('\n');
-        const blob = new Blob([csv], {type:'text/csv'});
-        saveBlob(blob, 'applications.csv');
-      } else if (type === 'json') {
-        const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-        saveBlob(blob, 'applications.json');
-      } else if (type === 'xlsx') {
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Applications');
-        XLSX.writeFile(wb, 'applications.xlsx');
-      } else if (type === 'zip') {
-        const zip = new JSZip();
-        zip.file('applications.json', JSON.stringify(data,null,2));
-        zip.file('applications.csv', 'Code,Name,Age,Phone\n' + data.map(a => `${a.code},${a.name},${a.age},${a.phone}`).join('\n'));
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Applications');
-        const xlsxBlob = XLSX.write(wb, {bookType:'xlsx', type:'array'});
-        zip.file('applications.xlsx', xlsxBlob);
-        zip.generateAsync({type:'blob'}).then(content => saveBlob(content, 'applications.zip'));
+    // Download CSV function
+    async function downloadCSV() {
+      downloadBtn.disabled = true;
+      downloadBtn.innerHTML = '<span class="loading"></span> Preparing...';
+      
+      try {
+        const snapshot = await db.collection("applications").get();
+        let csv = 'Code,Name,Age,Gender,Class Fellowship,Church,School,Class,Youth Category,Phone,Parent Contact,SU Member,First Time\n';
+        
+        snapshot.docs.forEach(doc => {
+          const app = doc.data();
+          csv += `"${app.code}","${app.name}",${app.age},"${app.gender}","${app.class_fellowship}","${app.church}","${app.school}","${app.class}","${app.youth_category}","${app.phone}","${app.parent_contact}","${app.are_you_su_member}","${app.is_it_your_first_time_in_su_camp}"\n`;
+        });
+        
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'su_camp_applications.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Error downloading CSV: ", err);
+        adminError.textContent = "Error generating CSV file: " + err.message;
+      } finally {
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = 'Download CSV';
       }
     }
 
-    function saveBlob(blob, filename) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
+    function resetSerial() {
+      if (confirm('Are you sure you want to reset the serial number? This will affect new registrations.')) {
+        localStorage.setItem('serialNumber', '0');
+        alert('Serial number has been reset to 0.');
+      }
     }
 
-    async function resetAllApplications() {
-      if (!confirm('Delete all applications?')) return;
-      const snapshot = await db.collection('applications').get();
-      const batch = db.batch();
-      snapshot.forEach(doc => batch.delete(doc.ref));
-      await batch.commit();
-      loadApplications();
-    }
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', async (e) => {
+      const filter = e.target.value.trim().toLowerCase();
+      
+      try {
+        if (filter.length === 0) {
+          await loadApplications();
+          return;
+        }
+        
+        const snapshot = await db.collection("applications").get();
+        const filtered = snapshot.docs
+          .map(doc => doc.data())
+          .filter(app => app.name.toLowerCase().includes(filter));
+        
+        renderTable(filtered);
+      } catch (err) {
+        console.error("Search error: ", err);
+        adminError.textContent = "Search error: " + err.message;
+      }
+    });
   </script>
 </body>
 </html>
